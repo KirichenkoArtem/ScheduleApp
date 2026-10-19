@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:paddingVertical="15dp"
+    android:orientation="vertical">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:background="@drawable/rounded_corners"
+        android:backgroundTint="@color/grey5"
+        android:paddingHorizontal="20dp"
+        >
+
+        <TextView
+            android:id="@+id/weekday"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Понедельник"
+            android:maxLines="1"
+            android:fontFamily="@font/inter_black"
+            android:textColor="@color/white"
+            android:textSize="15sp"
+            android:layout_gravity="center_vertical|start"
+            android:includeFontPadding="false"
+            android:layout_marginBottom="2dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/date"
+            />
+
+        <TextView
+            android:id="@+id/date"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="02.01.2026"
+            android:fontFamily="@font/inter_black"
+            android:textColor="@color/grey1"
+            android:textSize="15sp"
+            android:gravity="center"
+            android:includeFontPadding="false"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@id/weekday"
+            app:layout_constraintEnd_toStartOf="@+id/even"
+            />
+
+        <TextView
+            android:id="@+id/even"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Чётная"
+            android:fontFamily="@font/inter_black"
+            android:textColor="@color/white"
+            android:textSize="15sp"
+            android:layout_gravity="center_vertical|left"
+            android:includeFontPadding="false"
+            android:background="@drawable/rounded_corners"
+            android:backgroundTint="@color/yellow3"
+            android:paddingHorizontal="10dp"
+            android:paddingVertical="5dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@id/date"
+            app:layout_constraintEnd_toEndOf="parent"
+            />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerViewLessons"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        android:layout_marginHorizontal="20dp"
+        android:layout_marginTop="10dp"
+        >
+
+    </androidx.recyclerview.widget.RecyclerView>
+</LinearLayout>
