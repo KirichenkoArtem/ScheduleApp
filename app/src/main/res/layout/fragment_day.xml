@@ -5,11 +5,25 @@
     android:layout_height="match_parent"
     tools:context=".fragments.DayFragment">
 
-    <TextView
+    <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:gravity="center"
-        android:text="Day"
-        />
+        android:layout_gravity="center"
+        android:clipToPadding="false"
+        android:clipChildren="false"
+        android:clipToOutline="false"
+        >
+        <LinearLayout
+            android:id="@+id/days_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="10dp"
+            android:clipToPadding="false"
+            android:clipChildren="false"
+            android:clipToOutline="false"
+            >
 
+        </LinearLayout>
+    </ScrollView>
 </FrameLayout>
