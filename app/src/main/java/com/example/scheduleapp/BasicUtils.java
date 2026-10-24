@@ -21,14 +21,6 @@ import java.time.LocalDate;
 import com.example.scheduleapp.Classes.Lesson;
 
 public class BasicUtils {
-    private float dragOffsetX;
-    private float dragOffsetY;
-    public void simpleNewAndUIThreads(MainActivity mainActivity, Runnable thread, Runnable runnableUI){
-        new Thread(()->{
-            thread.run();
-            mainActivity.runOnUiThread(runnableUI);
-        }).start();
-    }
 
     public String getSystemWeekday(){
         LocalDate today = LocalDate.now();
@@ -37,6 +29,7 @@ public class BasicUtils {
         String[] weekdays = new String[]{"Понедельник","Вторник","Среда","Четверг","Пятница","Суббота","Воскресенье"};
         return weekdays[dayValue-1];
     }
+
     @SuppressLint("ClickableViewAccessibility")
     public void createLessonView(MainActivity mainActivity, Lesson lesson, ViewGroup parent, Runnable updateRender){
         String currentGroup = mainActivity.sp.getString("current_group","");

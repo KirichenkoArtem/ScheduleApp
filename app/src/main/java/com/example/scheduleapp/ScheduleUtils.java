@@ -11,6 +11,7 @@ import com.example.scheduleapp.Classes.*;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -38,36 +39,36 @@ public class ScheduleUtils {
 
     String baseUrl = "https://www.магпк.рф";
     String groupsUrl = baseUrl + "/students/schedule/group_list/group_rest.php";
-    String teachersUrl = baseUrl + "/teachers/teacher_rest.php";
+//    String teachersUrl = baseUrl + "/teachers/teacher_rest.php";
     String scheduleUrl = baseUrl + "/students/schedule/ajax_schedule/open_json.php";
-    String teacherScheduleUrl = baseUrl + "/students/schedule/teachers_schedule/open_json.php";
+//    String teacherScheduleUrl = baseUrl + "/students/schedule/teachers_schedule/open_json.php";
 
     public JSONArray getSchedule(String groupName) {
+        JSONArray weeks = new JSONArray();
         try {
-            JSONArray weeks = new JSONArray();
             String response = post(scheduleUrl,"type=2&group="+groupName);
             if (response == null) return null;
+            JSONArray JADays = new JSONArray();
             JSONObject JOResponse = new JSONObject(response);
             JSONObject JODays = JOResponse.getJSONObject("rs");
-            JSONArray JADays = new JSONArray();
             Iterator<String> daysKeys = JODays.keys();
             String daysKey;
             while(daysKeys.hasNext()){
                 daysKey = daysKeys.next();
                 JSONObject _JODay = JODays.getJSONObject(daysKey);
                 JSONObject JODay = new JSONObject();
+                JSONArray JALessons = new JSONArray();
                 JODay.put("weekDay", daysKey.charAt(0) + daysKey.substring(1).toLowerCase());
                 JODay.put("date","");
-
-                JSONArray JALessons = new JSONArray();
-                Iterator<String> dayKeys = _JODay.keys(); String dayKey;
+                Iterator<String> dayKeys = _JODay.keys();
+                String dayKey;
                 int id = 0;
                 while(dayKeys.hasNext()){
-                    dayKey = dayKeys.next();
                     id++;
-//                    Log.e("LOG",dayKey.replace("\n"," — "));
+                    dayKey = dayKeys.next();
                     JSONObject day = _JODay.getJSONObject(dayKey);
                     dayKey = dayKey.replace("\n"," — ");
+
                     JSONObject _firstSubgroupLesson = day.get("1") instanceof JSONObject ? day.getJSONObject("1") : new JSONObject();
                     JSONObject _secondSubgroupLesson = day.get("2") instanceof JSONObject ? day.getJSONObject("2") : new JSONObject();
 
@@ -98,7 +99,6 @@ public class ScheduleUtils {
                             JALessons.put(secondSubgroupLesson);
                         }
                     }
-
                 }
                 JODay.put("lessons",JALessons);
                 JADays.put(JODay);
@@ -107,12 +107,11 @@ public class ScheduleUtils {
             week.put("weekIsEven","");
             week.put("days",JADays);
             weeks.put(week);
-            return weeks;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        } catch (Exception ignored) {}
+        return weeks;
     }
 
+    /// Выводит список групп (в массиве для адаптера)
     public String[] getGroups() {
         try {
             String response = get(groupsUrl);
@@ -122,38 +121,21 @@ public class ScheduleUtils {
                 returnArray[i] = JAGroups.getJSONObject(i).getString("group_name");
             }
             return returnArray;
-        } catch (Exception e) {
-            Log.e("LOG_getGroups",""+e);
-        }
+        } catch (Exception ignored) {}
         return new String[]{};
     }
-
-//    /// Записывает расписание в `scheduleWeeks`, вызывать только если есть `currentGroup`
-//    public void getScheduleToSP(SharedPreferences sp){
-//        SharedPreferences.Editor editor = sp.edit();
-//        String currentGroup = sp.getString("current_group","");
-//        Log.e("LOG",currentGroup);
-//        editor.putString("scheduleWeeks",getSchedule(currentGroup).toString());
-//        editor.apply();
-//    }
 
     /// Записывает расписание в Schedule из `scheduleWeeks`, вызывать только если есть `currentGroup,scheduleWeeks`
     public List<Day> getScheduleInClasses(SharedPreferences sp){
         String currentGroup = sp.getString("current_group","");
-        if(currentGroup.isEmpty()){
-            Log.i("LOG","current_group = "+currentGroup);
-            return null;
-        }
+        if(currentGroup.isEmpty()) return null;
+        List<Day> returnDays = new ArrayList<>();
         try{
-            List<Day> return_days = new ArrayList<>();
             JSONArray JASchedule = getSchedule(currentGroup);
-//            List<Week> weeks = new ArrayList<>();
             for(int weekI = 0; weekI<JASchedule.length(); weekI++){
                 JSONObject JOWeek = JASchedule.getJSONObject(weekI);
-                String weekIsEven = JOWeek.get("weekIsEven") instanceof String ? ""
-                        : JOWeek.getBoolean("weekIsEven") ? "Чётная" : "Нечётная";
+                String weekIsEven = JOWeek.get("weekIsEven") instanceof String ? "" : JOWeek.getBoolean("weekIsEven") ? "Чётная" : "Нечётная";
                 JSONArray JADays = JOWeek.getJSONArray("days");
-//                List<Day> days = new ArrayList<>();
                 for (int dayI = 0; dayI<JADays.length(); dayI++){
                     JSONObject JODay = JADays.getJSONObject(dayI);
                     String weekDay = JODay.getString("weekDay");
@@ -171,22 +153,15 @@ public class ScheduleUtils {
                         lessons.add(new Lesson(id,subgroup,subject,time,teacher,auditory,""));
                     }
                     Day day = new Day(weekDay,date,weekIsEven,lessons);
-//                    days.add(day);
-                    return_days.add(day);
+                    returnDays.add(day);
                 }
-//                Week week = new Week(days);
-//                weeks.add(week);
             }
-//            return new Schedule(currentGroup, weeks);
-            return return_days;
-        }catch (Exception e){
-            Log.e("LOG", "parseSPToClasses "+e);
-            return null;
-        }
+        } catch (Exception ignored){}
+        return returnDays;
     }
 
     private String get(String url){
-        String html = null;
+        String html = "";
         try {
             HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
             connection.setRequestProperty("User-Agent", "Mozilla/5.0");
@@ -198,12 +173,12 @@ public class ScheduleUtils {
                 while ((ln = br.readLine()) != null) sb.append(ln);
                 html = sb.toString();
             } catch (Exception e){
-                Log.e("LOG","HTML bufferedReader error:\n"+e.toString());
+                Log.e("LOG","HTML bufferedReader error:\n"+e);
             } finally {
                 connection.disconnect();
             }
         } catch (Exception e) {
-            Log.e("LOG","HTML connection error:\n"+e.toString());
+            Log.e("LOG","HTML connection error:\n"+e);
         }
         return html;
     }
@@ -224,11 +199,15 @@ public class ScheduleUtils {
             }
 
             int responseCode = connection.getResponseCode();
-            InputStream inputStream = (responseCode >= 200 && responseCode < 300) ?
-                    connection.getInputStream() : connection.getErrorStream();
+            InputStream inputStream;
+            if (responseCode >= 200 && responseCode < 300) {
+                inputStream = connection.getInputStream();
+            } else {
+                inputStream = connection.getErrorStream();
+            }
 
             StringBuilder stringBuilder = new StringBuilder();
-            try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream,"UTF-8"))) {
+            try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
                 String line;
                 while ((line = bufferedReader.readLine()) != null){
                     stringBuilder.append(line);
@@ -236,8 +215,8 @@ public class ScheduleUtils {
             }
             return stringBuilder.toString();
         } catch (Exception e) {
-            Log.e("LOG","HTML connection error:\n"+e.toString());
+            Log.e("LOG","HTML connection error:\n"+e);
+            return null;
         }
-        return null;
     }
 }

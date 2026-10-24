@@ -3,20 +3,20 @@ package com.example.scheduleapp;
 import java.util.List;
 
 public class Classes {
-    public static class Schedule{
-        public String groupName;
-        public List<Week> weeks;
-        public Schedule(String groupName, List<Week> weeks) {
-            this.groupName = groupName;
-            this.weeks = weeks;
-        }
-    }
-    public static class Week{
-        public List<Day> days;
-        public Week(List<Day> days) {
-            this.days = days;
-        }
-    }
+//    public static class Schedule{
+//        public String groupName;
+//        public List<Week> weeks;
+//        public Schedule(String groupName, List<Week> weeks) {
+//            this.groupName = groupName;
+//            this.weeks = weeks;
+//        }
+//    }
+//    public static class Week{
+//        public List<Day> days;
+//        public Week(List<Day> days) {
+//            this.days = days;
+//        }
+//    }
     public static class Day{
         public String weekDay;
         public String date;

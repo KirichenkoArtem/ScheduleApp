@@ -18,8 +18,7 @@ import com.example.scheduleapp.R;
 
 public class NotesFragment extends Fragment {
 
-    private SharedPreferences spNotes;
-    private SharedPreferences sp;
+    private SharedPreferences spNotes, sp;
     private MainActivity mainActivity;
     private LayoutInflater inflater;
     private LinearLayout notesContainer;
@@ -48,9 +47,10 @@ public class NotesFragment extends Fragment {
 
     private void render(){
         notesContainer.removeAllViews();
+        SharedPreferences.Editor spNotesEdit = spNotes.edit();
         spNotes.getAll().forEach((key, value)->{
             if(key.split("_")[0].equals(sp.getString("current_group", "Ошибка"))){
-                LinearLayout noteView = (LinearLayout) inflater.inflate(R.layout.include_note,null);
+                LinearLayout noteView = (LinearLayout) inflater.inflate(R.layout.include_note, notesContainer, false);
                 ((TextView) noteView.findViewById(R.id.note_extra)).setText(key.split("_")[2]);
                 ((TextView) noteView.findViewById(R.id.note_name)).setText(key.split("_")[1]);
                 ((TextView) noteView.findViewById(R.id.note_text)).setText(String.valueOf(value));
@@ -71,15 +71,13 @@ public class NotesFragment extends Fragment {
                         alertInclude.setVisibility(View.GONE);
                     });
                     deleteButton.setOnClickListener(view -> {
-                        spNotes.edit().remove(key).apply();
+                        spNotesEdit.remove(key);
                         alertInclude.setVisibility(View.GONE);
                         render();
                     });
                     saveButton.setOnClickListener(view -> {
-                        if (!String.valueOf(editText.getText()).isEmpty()) {
-                            Log.d("LOG","IF: "+String.valueOf(editText.getText()).equals("")+"\nedittext: "+editText.getText());
-                            spNotes.edit().putString(key, "" + editText.getText()).apply();
-                        }
+                        if (!String.valueOf(editText.getText()).isEmpty())
+                            spNotesEdit.putString(key, "" + editText.getText());
                         alertInclude.setVisibility(View.GONE);
                         render();
                     });
@@ -88,5 +86,6 @@ public class NotesFragment extends Fragment {
                 notesContainer.addView(noteView);
             }
         });
+        spNotesEdit.apply();
     }
 }

@@ -29,23 +29,24 @@ public class GroupFragment extends Fragment {
     AutoCompleteTextView input_view;
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_select_group, container, false);
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        // Устанавливаем всё что надо
         mainActivity = (MainActivity) requireActivity();
         select_button = view.findViewById(R.id.select_button);
         input_view = view.findViewById(R.id.input_view);
 
+        // Работаем с ними
+        updateInputAdapter();
         select_button.setVisibility(View.GONE);
         select_button.setOnClickListener(ignored -> {
             mainActivity.goTo("fragment_day");
         });
-        updateInputAdapter();
         input_view.addTextChangedListener(new TextWatcher() {
             @Override
             public void afterTextChanged(Editable editable) {
@@ -55,16 +56,12 @@ public class GroupFragment extends Fragment {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
             @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-            }
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
         });
-        input_view.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+        input_view.setOnItemClickListener((adapterView, ignored, i, ignored1)->{
                 String groupName = adapterView.getItemAtPosition(i).toString();
                 mainActivity.sp.edit().putString("current_group",groupName).apply();
                 select_button.setVisibility(View.VISIBLE);
-            }
         });
     }
 
@@ -74,7 +71,7 @@ public class GroupFragment extends Fragment {
             new Thread(() -> {
                 String[] array = mainActivity.scheduleUtils.getGroups();
                 mainActivity.runOnUiThread(() -> {
-                    input_view.setAdapter(new ArrayAdapter<>(
+                    input_view.setAdapter(new ArrayAdapter<String>(
                             mainActivity,
                             android.R.layout.simple_dropdown_item_1line,
                             array
