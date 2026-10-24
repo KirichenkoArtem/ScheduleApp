@@ -26,16 +26,13 @@ import com.google.android.material.navigation.NavigationBarView;
 public class MainActivity extends AppCompatActivity {
 
     private ConstraintLayout include_header;
-    private BottomNavigationView bottom_navigator;
     private View loading_indicator;
-    private ImageView headerGroupSetButton;
-    public ImageView headerUpdateButton;
-    public ImageView headerAddButton;
+    private BottomNavigationView bottom_navigator;
+    private ImageView headerGroupSetButton, headerUpdateButton, headerAddButton;
+    private TextView headerGroupName,headerExtraText;
+    public SharedPreferences sp, spNotes;
     public ScheduleUtils scheduleUtils = new ScheduleUtils();
     public BasicUtils basicUtils = new BasicUtils();
-    public SharedPreferences sp;
-    public SharedPreferences spNotes;
-    private TextView headerGroupName,headerExtraText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,6 +44,7 @@ public class MainActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+        // Устанавливаем всё что надо
         include_header = findViewById(R.id.include_header);
         bottom_navigator = findViewById(R.id.bottom_navigator);
         sp = getSharedPreferences("hgfdzxgguhijoihugyfdt",MODE_PRIVATE);
@@ -57,6 +55,8 @@ public class MainActivity extends AppCompatActivity {
         headerGroupName = include_header.findViewById(R.id.headerGroupName);
         headerAddButton = include_header.findViewById(R.id.headerAddButton);
         headerExtraText = include_header.findViewById(R.id.headerExtraText);
+
+        // Работаем с переменными
         bottom_navigator.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
             if(id == R.id.menu_day){
@@ -71,28 +71,29 @@ public class MainActivity extends AppCompatActivity {
             }
             return false;
         });
-
         headerGroupSetButton.setOnClickListener(view -> {
             goTo("select_group");
         });
-        if(sp.getString("current_group", "").isEmpty()){
+        if(sp.getString("current_group", "").isEmpty())
+        {
             goTo("select_group");
-        }else{
-            basicUtils.simpleNewAndUIThreads(
-                    this,
-                    ()->scheduleUtils.getSchedule(sp.getString("current_group","")),
-                    null);
+        }
+        else
+        {
+            new Thread(()->scheduleUtils.getSchedule(sp.getString("current_group",""))).start();
             goTo("fragment_day");
         }
     }
 
+    /// Доступные фрагменты:
     /// select_group, fragment_day, fragment_week, fragment_notes
     public void goTo(String goToName){
         Fragment fragment = null;
         headerGroupName.setText(sp.getString("current_group", "Ошибка"));
-        setVisibleOfHeaders(true);
         headerAddButton.setVisibility(View.GONE);
         headerUpdateButton.setVisibility(View.GONE);
+        setVisibleOfHeaders(true);
+
         switch (goToName){
             case "select_group":
                 fragment = new GroupFragment();
@@ -117,11 +118,8 @@ public class MainActivity extends AppCompatActivity {
                 break;
         }
 
-        if (fragment == null) {
-            Log.e("LOG", "Ошибка при переключении фрагментов: fragment = null");
-        } else {
-            getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.fragment_container, fragment).commit();
+        if (fragment != null) {
+            getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fragment).commit();
         }
     }
 
@@ -136,8 +134,8 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    ///
+    /// Включаем или выключаем загрузку
     public void setVisibleOfLoadingIndicator(boolean isVisible){
-        if(loading_indicator != null) loading_indicator.setVisibility(isVisible ? View.VISIBLE : View.GONE);
+        loading_indicator.setVisibility(isVisible ? View.VISIBLE : View.GONE);
     }
 }
