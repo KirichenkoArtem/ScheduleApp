@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingVertical="5dp"
+    android:clipToPadding="false"
+    android:clipChildren="false"
+    android:focusable="true"
+    android:foreground="?attr/selectableItemBackground"
+    android:clickable="true"
+    >
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/rounded_corners"
+        android:backgroundTint="@color/white"
+        android:paddingHorizontal="20dp"
+        android:paddingVertical="15dp"
+        android:elevation="2dp"
+        android:clipToPadding="false"
+        android:clipChildren="false"
+        android:clipToOutline="false"
+        >
+
+        <TextView
+            android:id="@+id/note_name"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="25dp"
+            android:fontFamily="@font/inter_black"
+            android:text="subject"
+            android:textColor="@color/black"
+            android:autoSizeTextType="uniform"
+            android:autoSizeMaxTextSize="15sp"
+            android:maxLines="2"
+            android:gravity="start|center_vertical"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/note_extra"
+            />
+
+        <TextView
+            android:id="@+id/note_extra"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="teacher"
+            android:textSize="12sp"
+            android:textColor="@color/grey3"
+            android:fontFamily="@font/inter_medium"
+            android:gravity="center_vertical|end"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="@+id/note_name"
+            app:layout_constraintStart_toEndOf="@+id/note_name"
+            app:layout_constraintEnd_toEndOf="parent"
+
+            />
+
+        <ImageView
+            android:id="@+id/note_line"
+            android:layout_height="2dp"
+            android:layout_width="match_parent"
+            android:background="@drawable/rounded_corners"
+            android:backgroundTint="@color/yellow3"
+            android:layout_marginTop="5dp"
+            android:layout_marginHorizontal="-5dp"
+            app:layout_constraintTop_toBottomOf="@id/note_name"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            />
+
+        <TextView
+            android:id="@+id/note_text"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:textSize="12sp"
+            android:fontFamily="@font/inter_medium"
+            android:textColor="@color/grey6"
+            android:paddingHorizontal="10dp"
+            android:paddingTop="5dp"
+            app:layout_constraintTop_toBottomOf="@id/note_line"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="@+id/note_name"
+            app:layout_constraintEnd_toEndOf="parent"
+            />
+        <TextView
+            android:id="@+id/note_star"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="*"
+            android:gravity="end|center_vertical"
+            android:includeFontPadding="false"
+            android:textSize="20sp"
+            android:fontFamily="@font/inter_black"
+            android:textColor="@color/yellow3"
+            app:layout_constraintTop_toBottomOf="@id/note_line"
+            app:layout_constraintEnd_toEndOf="parent"
+            />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</LinearLayout>

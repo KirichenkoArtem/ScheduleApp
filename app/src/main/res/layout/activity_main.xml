@@ -41,6 +41,21 @@
 
     </LinearLayout>
 
+    <!-- alert_note поверх всего, но не выше загрузки -->
+    <androidx.core.widget.NestedScrollView
+        android:visibility="gone"
+        android:id="@+id/alert_include"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true"
+        >
+        <include
+            layout="@layout/include_alert"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            />
+    </androidx.core.widget.NestedScrollView>
+
     <!-- loading_indicator поверх всего -->
     <include
         android:visibility="gone"

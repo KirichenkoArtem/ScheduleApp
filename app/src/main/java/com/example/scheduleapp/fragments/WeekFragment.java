@@ -31,7 +31,7 @@ public class WeekFragment extends Fragment {
     private ScheduleUtils scheduleUtils;
     private BasicUtils basicUtils;
     private MainActivity mainActivity;
-    private ImageView headerGroupUpdate;
+    private ImageView headerUpdateButton;
     private LayoutInflater inflater;
 
     @Nullable
@@ -48,11 +48,11 @@ public class WeekFragment extends Fragment {
         scheduleUtils = mainActivity.scheduleUtils;
         basicUtils = mainActivity.basicUtils;
         daysContainer = view.findViewById(R.id.days_container);
-        headerGroupUpdate = mainActivity.headerGroupUpdate;
-        headerGroupUpdate.setOnClickListener(ignored -> {
+        headerUpdateButton = mainActivity.headerUpdateButton;
+        headerUpdateButton.setOnClickListener(ignored -> {
             render();
-            headerGroupUpdate.setRotation(0);
-            headerGroupUpdate.animate().setDuration(350).rotationBy(360).start();
+            headerUpdateButton.setRotation(0);
+            headerUpdateButton.animate().setDuration(350).rotationBy(360).start();
         });
         render();
     }
@@ -61,6 +61,7 @@ public class WeekFragment extends Fragment {
     /// Сильно оптимизированный рендер благодаря recyclerView
     private void render(){
         mainActivity.setVisibleOfLoadingIndicator(true);
+        daysContainer.removeAllViews();
         AtomicReference<List<Day>> days = new AtomicReference<>(new ArrayList<>());
         basicUtils.simpleNewAndUIThreads(
                 mainActivity,
@@ -70,31 +71,24 @@ public class WeekFragment extends Fragment {
                 },
                 ()->{
                     for (Day day : days.get()){
+
                         LinearLayout includeDay = (LinearLayout) inflater.inflate(
                                 R.layout.include_day,
                                 daysContainer,
                                 false);
                         LinearLayout lessonsContainer = includeDay.findViewById(R.id.lesson_container);
-
                         TextView weekDay = includeDay.findViewById(R.id.weekday);
                         TextView date = includeDay.findViewById(R.id.date);
                         TextView even = includeDay.findViewById(R.id.even);
-
                         if (day.weekDay.isEmpty()) weekDay.setVisibility(View.GONE);
                         else weekDay.setText(day.weekDay);
                         if (day.date.isEmpty()) date.setVisibility(View.GONE);
                         else date.setText(day.date);
                         if (day.even.isEmpty()) even.setVisibility(View.GONE);
                         else even.setText(day.even);
+
                         for(Classes.Lesson lesson : day.lessons){
-                            LinearLayout lessonView = (LinearLayout) View.inflate(mainActivity,R.layout.include_lesson,null);
-                            ((TextView) lessonView.findViewById(R.id.lesson_count)).setText(""+lesson.id);
-                            ((TextView) lessonView.findViewById(R.id.lesson_subgroup)).setText(lesson.subgroup==1? "" : "."+lesson.subgroup);
-                            ((TextView) lessonView.findViewById(R.id.lesson_name)).setText(lesson.subject);
-                            ((TextView) lessonView.findViewById(R.id.lesson_teacher)).setText(lesson.teacher);
-                            ((TextView) lessonView.findViewById(R.id.lesson_time)).setText(lesson.time);
-                            ((TextView) lessonView.findViewById(R.id.lesson_room)).setText(lesson.auditory);
-                            lessonsContainer.addView(lessonView);
+                            basicUtils.createLessonView(mainActivity,lesson,lessonsContainer,this::render);
                         }
                         daysContainer.addView(includeDay);
                     }

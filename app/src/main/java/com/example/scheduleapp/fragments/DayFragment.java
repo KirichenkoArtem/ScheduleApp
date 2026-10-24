@@ -30,7 +30,7 @@ public class DayFragment extends Fragment {
     ScheduleUtils scheduleUtils;
     BasicUtils basicUtils;
     LinearLayout linearLayout;
-    ImageView headerGroupUpdate;
+    ImageView headerUpdateButton;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -49,11 +49,11 @@ public class DayFragment extends Fragment {
         scheduleUtils = mainActivity.scheduleUtils;
         basicUtils = mainActivity.basicUtils;
         linearLayout = view.findViewById(R.id.days_container);
-        headerGroupUpdate = mainActivity.headerGroupUpdate;
-        headerGroupUpdate.setOnClickListener(ignored -> {
+        headerUpdateButton = mainActivity.headerUpdateButton;
+        headerUpdateButton.setOnClickListener(ignored -> {
             render();
-            headerGroupUpdate.setRotation(0);
-            headerGroupUpdate.animate().setDuration(350).rotationBy(360).start();
+            headerUpdateButton.setRotation(0);
+            headerUpdateButton.animate().setDuration(350).rotationBy(360).start();
         });
         render();
     }
@@ -62,6 +62,7 @@ public class DayFragment extends Fragment {
     /// Сильно оптимизированный рендер благодаря recyclerView
     private void render(){
         mainActivity.setVisibleOfLoadingIndicator(true);
+        linearLayout.removeAllViews();
         AtomicReference<List<Day>> days = new AtomicReference<>(new ArrayList<>());
         basicUtils.simpleNewAndUIThreads(
                 mainActivity,
@@ -85,14 +86,7 @@ public class DayFragment extends Fragment {
                             else even.setText(day.even);
 
                             for(Lesson lesson : day.lessons){
-                                LinearLayout lessonView = (LinearLayout) View.inflate(mainActivity,R.layout.include_lesson,null);
-                                ((TextView) lessonView.findViewById(R.id.lesson_count)).setText(""+lesson.id);
-                                ((TextView) lessonView.findViewById(R.id.lesson_subgroup)).setText(lesson.subgroup==1? "" : ""+lesson.subgroup);
-                                ((TextView) lessonView.findViewById(R.id.lesson_name)).setText(lesson.subject);
-                                ((TextView) lessonView.findViewById(R.id.lesson_teacher)).setText(lesson.teacher);
-                                ((TextView) lessonView.findViewById(R.id.lesson_time)).setText(lesson.time);
-                                ((TextView) lessonView.findViewById(R.id.lesson_room)).setText(lesson.auditory);
-                                lessonsContainer.addView(lessonView);
+                                basicUtils.createLessonView(mainActivity,lesson,lessonsContainer,this::render);
                             }
                         }
                     }

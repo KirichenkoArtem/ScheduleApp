@@ -29,11 +29,12 @@ public class MainActivity extends AppCompatActivity {
     private BottomNavigationView bottom_navigator;
     private View loading_indicator;
     private ImageView headerGroupSetButton;
-    public ImageView headerGroupUpdate;
+    public ImageView headerUpdateButton;
+    public ImageView headerAddButton;
     public ScheduleUtils scheduleUtils = new ScheduleUtils();
     public BasicUtils basicUtils = new BasicUtils();
     public SharedPreferences sp;
-    public SharedPreferences spLessons;
+    public SharedPreferences spNotes;
     private TextView headerGroupName,headerExtraText;
 
     @Override
@@ -49,13 +50,13 @@ public class MainActivity extends AppCompatActivity {
         include_header = findViewById(R.id.include_header);
         bottom_navigator = findViewById(R.id.bottom_navigator);
         sp = getSharedPreferences("hgfdzxgguhijoihugyfdt",MODE_PRIVATE);
-        spLessons = getSharedPreferences("fcgvjhbkljgjvgchfgkjb",MODE_PRIVATE);
+        spNotes = getSharedPreferences("fcgvjhbkljgjvgchfgkjb",MODE_PRIVATE);
         loading_indicator = findViewById(R.id.loading_indicator);
         headerGroupSetButton = include_header.findViewById(R.id.headerGroupSetButton);
-        headerGroupUpdate = include_header.findViewById(R.id.headerUpdateButton);
+        headerUpdateButton = include_header.findViewById(R.id.headerUpdateButton);
         headerGroupName = include_header.findViewById(R.id.headerGroupName);
+        headerAddButton = include_header.findViewById(R.id.headerAddButton);
         headerExtraText = include_header.findViewById(R.id.headerExtraText);
-
         bottom_navigator.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
             if(id == R.id.menu_day){
@@ -90,6 +91,8 @@ public class MainActivity extends AppCompatActivity {
         Fragment fragment = null;
         headerGroupName.setText(sp.getString("current_group", "Ошибка"));
         setVisibleOfHeaders(true);
+        headerAddButton.setVisibility(View.GONE);
+        headerUpdateButton.setVisibility(View.GONE);
         switch (goToName){
             case "select_group":
                 fragment = new GroupFragment();
@@ -98,14 +101,17 @@ public class MainActivity extends AppCompatActivity {
             case "fragment_day":
                 fragment = new DayFragment();
                 headerExtraText.setText("Расписание на день");
+                headerUpdateButton.setVisibility(View.VISIBLE);
                 break;
             case "fragment_week":
                 fragment = new WeekFragment();
                 headerExtraText.setText("Расписание на неделю");
+                headerUpdateButton.setVisibility(View.VISIBLE);
                 break;
             case "fragment_notes":
                 fragment = new NotesFragment();
                 headerExtraText.setText("Заметки на уроки");
+                headerAddButton.setVisibility(View.VISIBLE);
                 break;
             default:
                 break;

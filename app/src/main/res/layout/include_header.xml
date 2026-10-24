@@ -60,7 +60,17 @@
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:background="@drawable/circle"
-            android:src="@drawable/update_icon"
+            android:src="@drawable/ic_update"
+            android:padding="5dp"
+            android:backgroundTint="@color/grey4"
+            android:layout_marginHorizontal="5dp"
+            app:tint="@color/yellow3" />
+        <ImageView
+            android:id="@+id/headerAddButton"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="@drawable/circle"
+            android:src="@drawable/ic_add"
             android:padding="5dp"
             android:backgroundTint="@color/grey4"
             android:layout_marginHorizontal="5dp"
