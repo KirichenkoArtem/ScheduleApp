@@ -75,13 +75,11 @@ public class BasicUtils {
             });
             saveButton.setOnClickListener(view -> {
                 if (!String.valueOf(editText.getText()).isEmpty()) {
-                    Log.d("LOG", "IF: " + String.valueOf(editText.getText()).equals("") + "\nedittext: " + editText.getText());
                     sp.edit().putString(noteName, "" + editText.getText()).apply();
                 }
                 alertInclude.setVisibility(View.GONE);
                 updateRender.run();
             });
-
             alertInclude.setVisibility(View.VISIBLE);
         });
         parent.addView(lessonView);
