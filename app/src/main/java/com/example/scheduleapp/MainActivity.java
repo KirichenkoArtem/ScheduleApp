@@ -28,8 +28,8 @@ public class MainActivity extends AppCompatActivity {
     private ConstraintLayout include_header;
     private View loading_indicator;
     private BottomNavigationView bottom_navigator;
-    private ImageView headerGroupSetButton, headerUpdateButton, headerAddButton;
-    private TextView headerGroupName,headerExtraText;
+    private TextView headerGroupName, headerExtraText;
+    public ImageView headerGroupSetButton, headerUpdateButton, headerAddButton;
     public SharedPreferences sp, spNotes;
     public ScheduleUtils scheduleUtils = new ScheduleUtils();
     public BasicUtils basicUtils = new BasicUtils();
@@ -119,7 +119,9 @@ public class MainActivity extends AppCompatActivity {
         }
 
         if (fragment != null) {
-            getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fragment).commit();
+            getSupportFragmentManager().beginTransaction()
+                    .setCustomAnimations(R.anim.fade_in, R.anim.fade_out)
+                    .replace(R.id.fragment_container, fragment).commit();
         }
     }
 
