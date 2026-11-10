@@ -7,12 +7,16 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+
+import com.example.scheduleapp.BasicUtils;
 import com.example.scheduleapp.MainActivity;
 import com.example.scheduleapp.R;
 
@@ -22,6 +26,7 @@ public class NotesFragment extends Fragment {
     private MainActivity mainActivity;
     private LayoutInflater inflater;
     private LinearLayout notesContainer;
+    private ImageView addNoteButton;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -42,7 +47,11 @@ public class NotesFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         notesContainer = view.findViewById(R.id.notes_container);
+        addNoteButton = mainActivity.findViewById(R.id.headerAddButton);
         render();
+        addNoteButton.setOnClickListener((v)->{
+            mainActivity.basicUtils.openAddNote(mainActivity,this::render);
+        });
     }
 
     private void render(){
@@ -51,38 +60,23 @@ public class NotesFragment extends Fragment {
         spNotes.getAll().forEach((key, value)->{
             if(key.split("_")[0].equals(sp.getString("current_group", "Ошибка"))){
                 LinearLayout noteView = (LinearLayout) inflater.inflate(R.layout.include_note, notesContainer, false);
-                ((TextView) noteView.findViewById(R.id.note_extra)).setText(key.split("_")[2]);
-                ((TextView) noteView.findViewById(R.id.note_name)).setText(key.split("_")[1]);
-                ((TextView) noteView.findViewById(R.id.note_text)).setText(String.valueOf(value));
-                noteView.setOnClickListener(ignored -> {
-                    View alertInclude = mainActivity.findViewById(R.id.alert_include);
-                    View alertBackground = alertInclude.findViewById(R.id.alert_background);
-                    TextView mainText = alertInclude.findViewById(R.id.alert_mainText);
-                    TextView extraText = alertInclude.findViewById(R.id.alert_extraText);
-                    EditText editText = alertInclude.findViewById(R.id.alert_editText);
-                    View deleteButton = alertInclude.findViewById(R.id.alert_deleteButton);
-                    View saveButton = alertInclude.findViewById(R.id.alert_saveButton);
-
-                    mainText.setText(key.split("_")[1]);
-                    extraText.setText(key.split("_")[2]+" * Заметка");
-                    editText.setText(String.valueOf(value));
-
-                    alertBackground.setOnClickListener(view -> {
-                        alertInclude.setVisibility(View.GONE);
-                    });
-                    deleteButton.setOnClickListener(view -> {
-                        spNotesEdit.remove(key);
-                        alertInclude.setVisibility(View.GONE);
-                        render();
-                    });
-                    saveButton.setOnClickListener(view -> {
-                        if (!String.valueOf(editText.getText()).isEmpty())
-                            spNotesEdit.putString(key, "" + editText.getText());
-                        alertInclude.setVisibility(View.GONE);
-                        render();
-                    });
-                    alertInclude.setVisibility(View.VISIBLE);
-                });
+                String noteName = key.split("_")[1];
+                if(key.split("_").length>1) {
+                    ((TextView) noteView.findViewById(R.id.note_extra)).setText(key.split("_")[2]);
+                }else{
+                    ((TextView) noteView.findViewById(R.id.note_extra)).setText("");
+                }
+                String noteExtra = ""+((TextView) noteView.findViewById(R.id.note_extra)).getText();
+                String noteValue = ""+value;
+                ((TextView) noteView.findViewById(R.id.note_name)).setText(noteName);
+                ((TextView) noteView.findViewById(R.id.note_text)).setText(noteValue);
+                noteView.setOnClickListener(ignored -> mainActivity.basicUtils.openChangeNote(
+                        mainActivity,(sp.getString("current_group","")+"_"+noteName+"_"+noteExtra),
+                        noteName,
+                        noteExtra+" * Заметка",
+                        noteValue,
+                        this::render
+                ));
                 notesContainer.addView(noteView);
             }
         });

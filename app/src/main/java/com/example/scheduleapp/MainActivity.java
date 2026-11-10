@@ -8,6 +8,7 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
@@ -55,6 +56,23 @@ public class MainActivity extends AppCompatActivity {
         headerGroupName = include_header.findViewById(R.id.headerGroupName);
         headerAddButton = include_header.findViewById(R.id.headerAddButton);
         headerExtraText = include_header.findViewById(R.id.headerExtraText);
+
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.alert_change_note), (v, insets) -> {
+            Insets ime        = insets.getInsets(WindowInsetsCompat.Type.ime());
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+
+            int extraBottom = Math.max(0, ime.bottom - systemBars.bottom);
+            v.setPadding(0, 0, 0, extraBottom);
+            return insets;
+        });
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.alert_add_note), (v, insets) -> {
+            Insets ime        = insets.getInsets(WindowInsetsCompat.Type.ime());
+            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+
+            int extraBottom = Math.max(0, ime.bottom - systemBars.bottom);
+            v.setPadding(0, 0, 0, extraBottom);
+            return insets;
+        });
 
         // Работаем с переменными
         bottom_navigator.setOnItemSelectedListener(item -> {

@@ -1,6 +1,7 @@
 package com.example.scheduleapp.fragments;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -72,24 +73,26 @@ public class WeekFragment extends Fragment {
                             R.layout.include_day,
                             daysContainer,
                             false);
-                    LinearLayout lessonsContainer = includeDay.findViewById(R.id.lesson_container);
-                    TextView weekDay = includeDay.findViewById(R.id.weekday);
-                    TextView date = includeDay.findViewById(R.id.date);
-                    TextView even = includeDay.findViewById(R.id.even);
-                    if (day.weekDay.isEmpty()) weekDay.setVisibility(View.GONE);
-                    else weekDay.setText(day.weekDay);
-                    if (day.date.isEmpty()) date.setVisibility(View.GONE);
-                    else date.setText(day.date);
-                    if (day.even.isEmpty()) even.setVisibility(View.GONE);
-                    else even.setText(day.even);
+                    daysContainer.post(()->{
+                        LinearLayout lessonsContainer = includeDay.findViewById(R.id.lesson_container);
+                        TextView weekDay = includeDay.findViewById(R.id.weekday);
+                        TextView date = includeDay.findViewById(R.id.date);
+                        TextView even = includeDay.findViewById(R.id.even);
+                        if (day.weekDay.isEmpty()) weekDay.setVisibility(View.GONE);
+                        else weekDay.setText(day.weekDay);
+                        if (day.date.isEmpty()) date.setVisibility(View.GONE);
+                        else date.setText(day.date);
+                        if (day.even.isEmpty()) even.setVisibility(View.GONE);
+                        else even.setText(day.even);
 
-                    for(Classes.Lesson lesson : day.lessons){
-                        basicUtils.createLessonView(mainActivity,lesson,lessonsContainer,this::render);
-                    }
-                    daysContainer.addView(includeDay);
+                        for(Classes.Lesson lesson : day.lessons){
+                            basicUtils.createLessonView(mainActivity, lesson, lessonsContainer, this::render);
+                        }
+                        daysContainer.addView(includeDay);
+                    });
                 }
                 mainActivity.setVisibleOfLoadingIndicator(false);
             });
-        });
+        }).start();
     }
 }

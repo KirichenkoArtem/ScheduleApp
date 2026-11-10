@@ -2,6 +2,7 @@ package com.example.scheduleapp;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -9,13 +10,16 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.widget.NestedScrollView;
 
+import java.io.BufferedReader;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import com.example.scheduleapp.Classes.Lesson;
@@ -52,36 +56,131 @@ public class BasicUtils {
             noteText.setVisibility(View.VISIBLE);
             noteStar.setVisibility(View.VISIBLE);
         }
-        (lessonView).setOnClickListener(ignored->{
-            View alertInclude = mainActivity.findViewById(R.id.alert_include);
-            View alertBackground = alertInclude.findViewById(R.id.alert_background);
-            TextView mainText = alertInclude.findViewById(R.id.alert_mainText);
-            TextView extraText = alertInclude.findViewById(R.id.alert_extraText);
-            EditText editText = alertInclude.findViewById(R.id.alert_editText);
-            View deleteButton = alertInclude.findViewById(R.id.alert_deleteButton);
-            View saveButton = alertInclude.findViewById(R.id.alert_saveButton);
-
-            mainText.setText(lesson.subject);
-            extraText.setText(lesson.teacher+" * Заметка");
-            editText.setText(sp.getString(noteName,""));
-
-            alertBackground.setOnClickListener(view -> {
-                alertInclude.setVisibility(View.GONE);
-            });
-            deleteButton.setOnClickListener(view -> {
-                sp.edit().remove(noteName).apply();
-                alertInclude.setVisibility(View.GONE);
-                updateRender.run();
-            });
-            saveButton.setOnClickListener(view -> {
-                if (!String.valueOf(editText.getText()).isEmpty()) {
-                    sp.edit().putString(noteName, "" + editText.getText()).apply();
-                }
-                alertInclude.setVisibility(View.GONE);
-                updateRender.run();
-            });
-            alertInclude.setVisibility(View.VISIBLE);
-        });
+        (lessonView).setOnClickListener(ignored-> mainActivity.basicUtils.openChangeNote(
+                mainActivity,
+                noteName,
+                lesson.subject,
+                lesson.teacher+" * Заметка",
+                sp.getString(noteName,""),
+                updateRender
+        ));
         parent.addView(lessonView);
+    }
+
+    /// alertInclude
+    public void animateAlertInclude(View view, boolean isVisible){
+        ConstraintLayout alertBody;
+        ImageView alertBackground;
+        EditText editText;
+        if (view.findViewById(R.id.alert_change_body) == null){
+            if(view.findViewById(R.id.alert_add_body) == null){
+                return;
+            }else{
+                alertBody = view.findViewById(R.id.alert_add_body);
+                alertBackground = view.findViewById(R.id.alert_add_background);
+                editText = view.findViewById(R.id.alert_add_valueEditText);
+            }
+        }else{
+            alertBackground = view.findViewById(R.id.alert_change_background);
+            alertBody = view.findViewById(R.id.alert_change_body);
+            editText = view.findViewById(R.id.alert_change_editText);
+        }
+        if(isVisible){
+            view.setVisibility(View.VISIBLE);
+            alertBody.animate().setDuration(0)
+                    .translationY(2500)
+                    .withEndAction(()-> alertBody.animate().setDuration(500)
+                            .translationY(0)
+                            .start())
+                    .start();
+            alertBackground.animate().setDuration(0)
+                    .translationY(-2500)
+                    .withEndAction(()-> alertBackground.animate().setDuration(500)
+                            .translationY(0)
+                            .start())
+                    .start();
+        }else{
+            // Закрываем
+            hideKeyboard(editText);
+            alertBackground.animate().setDuration(500)
+                    .translationY(-2500)
+                    .start();
+            alertBody.animate().setDuration(500)
+                    .translationY(2500)
+                    .withEndAction(()-> view.setVisibility(View.GONE))
+                    .start();
+        }
+    }
+    public void hideKeyboard(EditText editText){
+        InputMethodManager imm = (InputMethodManager) editText.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+        if (imm != null)
+            imm.hideSoftInputFromWindow(
+                    editText
+                .getWindowToken(), 0);
+    }
+
+
+    /// Метод для быстрого открытия и работы с окном заметки
+    public void openChangeNote(MainActivity mainActivity_, String fullNoteName, String noteName, String noteExtra, String noteValue, Runnable onCloseRunnable){
+        LinearLayout alertInclude = mainActivity_.findViewById(R.id.alert_change_note);
+        View alertBackground = alertInclude.findViewById(R.id.alert_change_background);
+        TextView mainText = alertInclude.findViewById(R.id.alert_change_mainText);
+        TextView extraText = alertInclude.findViewById(R.id.alert_change_extraText);
+        EditText editText = alertInclude.findViewById(R.id.alert_change_editText);
+        View deleteButton = alertInclude.findViewById(R.id.alert_change_deleteButton);
+        View saveButton = alertInclude.findViewById(R.id.alert_change_saveButton);
+
+        mainText.setText(noteName);
+        extraText.setText(noteExtra);
+        editText.setText(noteValue);
+
+        alertBackground.setOnClickListener(view -> {
+            mainActivity_.basicUtils.animateAlertInclude(alertInclude,false);
+        });
+        deleteButton.setOnClickListener(view -> {
+            mainActivity_.spNotes.edit().remove(fullNoteName).apply();
+            mainActivity_.basicUtils.animateAlertInclude(alertInclude,false);
+            onCloseRunnable.run();
+        });
+        saveButton.setOnClickListener(view -> {
+            if (!String.valueOf(editText.getText()).isEmpty()) {
+                mainActivity_.spNotes.edit().putString(fullNoteName, "" + editText.getText()).apply();
+            }
+            mainActivity_.basicUtils.animateAlertInclude(alertInclude,false);
+            onCloseRunnable.run();
+        });
+        mainActivity_.basicUtils.animateAlertInclude(alertInclude,true);
+    }
+
+
+    public void openAddNote(MainActivity mainActivity_, Runnable onCloseRunnable){
+        LinearLayout alertInclude = mainActivity_.findViewById(R.id.alert_add_note);
+        View alertBackground = alertInclude.findViewById(R.id.alert_add_background);
+        EditText mainTextEditText = alertInclude.findViewById(R.id.alert_add_mainEditText);
+        EditText valueEditText = alertInclude.findViewById(R.id.alert_add_valueEditText);
+        TextView exitTextView = alertInclude.findViewById(R.id.alert_add_exitButton);
+        TextView saveTextView = alertInclude.findViewById(R.id.alert_add_saveButton);
+
+        mainTextEditText.setText("");
+        valueEditText.setText("");
+
+        Runnable justClose = () -> {
+            mainActivity_.basicUtils.animateAlertInclude(alertInclude,false);
+        };
+
+        alertBackground.setOnClickListener(view -> justClose.run());
+        exitTextView.setOnClickListener(view -> justClose.run());
+        saveTextView.setOnClickListener(view -> {
+            if (!String.valueOf(mainTextEditText.getText()).isEmpty() && !String.valueOf(valueEditText.getText()).isEmpty()) {
+                // (sp.getString("current_group","")+"_"+noteName+"_"+noteExtra)
+                mainActivity_.spNotes.edit().putString(
+                        (mainActivity_.sp.getString("current_group","")+"_"+mainTextEditText.getText()+"_ "),
+                        ""+valueEditText.getText()).apply();
+            }
+            mainActivity_.basicUtils.animateAlertInclude(alertInclude,false);
+            onCloseRunnable.run();
+        });
+
+        mainActivity_.basicUtils.animateAlertInclude(alertInclude,true);
     }
 }

@@ -107,8 +107,9 @@ public class ScheduleUtils {
             week.put("weekIsEven","");
             week.put("days",JADays);
             weeks.put(week);
+            return weeks;
         } catch (Exception ignored) {}
-        return weeks;
+        return null;
     }
 
     /// Выводит список групп (в массиве для адаптера)
@@ -125,13 +126,17 @@ public class ScheduleUtils {
         return new String[]{};
     }
 
-    /// Записывает расписание в Schedule из `scheduleWeeks`, вызывать только если есть `currentGroup,scheduleWeeks`
     public List<Day> getScheduleInClasses(SharedPreferences sp){
         String currentGroup = sp.getString("current_group","");
         if(currentGroup.isEmpty()) return null;
         List<Day> returnDays = new ArrayList<>();
         try{
             JSONArray JASchedule = getSchedule(currentGroup);
+            if (JASchedule == null){
+                JASchedule = new JSONArray(sp.getString(currentGroup+"_schedule", String.valueOf(new JSONArray())));
+            } else {
+                sp.edit().putString(currentGroup+"_schedule", JASchedule.toString()).apply();
+            }
             for(int weekI = 0; weekI<JASchedule.length(); weekI++){
                 JSONObject JOWeek = JASchedule.getJSONObject(weekI);
                 String weekIsEven = JOWeek.get("weekIsEven") instanceof String ? "" : JOWeek.getBoolean("weekIsEven") ? "Чётная" : "Нечётная";
@@ -150,6 +155,12 @@ public class ScheduleUtils {
                         String time = JOLesson.getString("time");
                         String teacher = JOLesson.getString("teacher");
                         String auditory = JOLesson.getString("auditory");
+                        if (subject.trim().equals("Обществознание")
+                                && currentGroup.trim().equals("ПД-12")
+                                && weekDay.trim().equals("Пятница")
+                        ){
+                            subject = "Индивидуальный проект";
+                        }
                         lessons.add(new Lesson(id,subgroup,subject,time,teacher,auditory,""));
                     }
                     Day day = new Day(weekDay,date,weekIsEven,lessons);
@@ -165,7 +176,8 @@ public class ScheduleUtils {
         try {
             HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
             connection.setRequestProperty("User-Agent", "Mozilla/5.0");
-            connection.setConnectTimeout(15000);
+            connection.setReadTimeout(10000);
+            connection.setConnectTimeout(10000);
             try (BufferedReader br = new BufferedReader(
                     new InputStreamReader(connection.getInputStream(), "UTF-8"))) {
                 StringBuilder sb = new StringBuilder();
@@ -191,8 +203,8 @@ public class ScheduleUtils {
             connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
             connection.setRequestProperty("Accept", "application/json");
             connection.setRequestProperty("User-Agent", "Mozilla/5.0");
-            connection.setConnectTimeout(15000);
-            connection.setReadTimeout(15000);
+            connection.setConnectTimeout(10000);
+            connection.setReadTimeout(10000);
             try (OutputStream outputStream = connection.getOutputStream()) {
                 byte[] output = body.getBytes("UTF-8");
                 outputStream.write(output);
