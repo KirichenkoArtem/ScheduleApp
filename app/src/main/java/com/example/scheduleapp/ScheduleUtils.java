@@ -175,6 +175,10 @@ public class ScheduleUtils {
                         }
                         lessons.add(new Lesson(id,subgroup,subject,time,teacher,auditory,""));
                     }
+                    if (currentGroup.trim().equals("ПД-12")
+                            && weekDay.trim().equals("Вторник")){
+                        lessons.add(new Lesson(11,1,"Строевая","18:00 — 19:30","","",""));
+                    }
                     Day day = new Day(weekDay,date,weekIsEven,lessons);
                     returnDays.add(day);
                 }
