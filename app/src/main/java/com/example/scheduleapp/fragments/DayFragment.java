@@ -1,11 +1,15 @@
 package com.example.scheduleapp.fragments;
 
+import android.content.res.ColorStateList;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -91,7 +95,28 @@ public class DayFragment extends Fragment {
                     }
                 }
                 mainActivity.setVisibleOfLoadingIndicator(false);
+                onResume();
             });
         }).start();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if(mainActivity != null && mainActivity.basicUtils != null && linearLayout != null) {
+            int daysCount = linearLayout.getChildCount();
+            for (int i = 0; i < daysCount; i++) {
+                LinearLayout lessonContainerLL = linearLayout.getChildAt(i).findViewById(R.id.lesson_container);
+                int lessonsCount = lessonContainerLL.getChildCount();
+                for (int j = 0; j < lessonsCount; j++) {
+                    LinearLayout lessonLL = (LinearLayout) lessonContainerLL.getChildAt(j);
+                    String lessonTime = (String) ((TextView) lessonLL.findViewById(R.id.lesson_time)).getText();
+                    if (mainActivity.basicUtils.isMiddleTime(lessonTime)) {
+                        lessonLL.findViewById(R.id.lesson_cl).setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(mainActivity.getApplicationContext(),R.color.yellow1)));
+                        return;
+                    }
+                }
+            }
+        }
     }
 }

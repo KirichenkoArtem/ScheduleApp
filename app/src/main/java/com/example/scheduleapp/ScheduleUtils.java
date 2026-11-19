@@ -1,6 +1,9 @@
 package com.example.scheduleapp;
 
+import android.content.Context;
 import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.NetworkCapabilities;
 import android.util.Log;
 
 import org.apache.poi.ss.usermodel.CellType;
@@ -11,6 +14,8 @@ import com.example.scheduleapp.Classes.*;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -37,17 +42,20 @@ import java.util.Objects;
 
 public class ScheduleUtils {
 
+    MainActivity mainActivity;
     String baseUrl = "https://www.магпк.рф";
     String groupsUrl = baseUrl + "/students/schedule/group_list/group_rest.php";
 //    String teachersUrl = baseUrl + "/teachers/teacher_rest.php";
     String scheduleUrl = baseUrl + "/students/schedule/ajax_schedule/open_json.php";
 //    String teacherScheduleUrl = baseUrl + "/students/schedule/teachers_schedule/open_json.php";
 
-    public JSONArray getSchedule(String groupName) {
+    private JSONArray getSchedule(String groupName) {
         JSONArray weeks = new JSONArray();
         try {
             String response = post(scheduleUrl,"type=2&group="+groupName);
-            if (response == null) return null;
+            if (response == null || response.equals("timeout") || response.equals("no-network")) {
+                return null;
+            }
             JSONArray JADays = new JSONArray();
             JSONObject JOResponse = new JSONObject(response);
             JSONObject JODays = JOResponse.getJSONObject("rs");
@@ -112,10 +120,14 @@ public class ScheduleUtils {
         return null;
     }
 
+
     /// Выводит список групп (в массиве для адаптера)
     public String[] getGroups() {
         try {
             String response = get(groupsUrl);
+            if (response == null || response.equals("timeout") || response.equals("no-network")) {
+                return new String[]{};
+            }
             JSONArray JAGroups = new JSONArray(response);
             String[] returnArray = new String[JAGroups.length()];
             for (int i = 0; i<JAGroups.length(); i++){
@@ -171,30 +183,55 @@ public class ScheduleUtils {
         return returnDays;
     }
 
+    /// Проверка на подключение к интернету
+    private boolean isHaveNetwork(){
+        if (mainActivity == null){
+            return false;
+        }
+        ConnectivityManager connManager =
+                (ConnectivityManager) mainActivity.getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkCapabilities capabilities =
+                connManager.getNetworkCapabilities(connManager.getActiveNetwork());
+        if (capabilities != null && (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ||
+                        capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) ||
+                        capabilities.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET))){
+            return true;
+        }
+        return false;
+    }
+
     private String get(String url){
+        if(!isHaveNetwork()){
+            return "no-network";
+        }
         String html = "";
         try {
             HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
             connection.setRequestProperty("User-Agent", "Mozilla/5.0");
-            connection.setReadTimeout(10000);
-            connection.setConnectTimeout(10000);
+            connection.setReadTimeout(2500);
+            connection.setConnectTimeout(2500);
             try (BufferedReader br = new BufferedReader(
                     new InputStreamReader(connection.getInputStream(), "UTF-8"))) {
                 StringBuilder sb = new StringBuilder();
                 String ln;
                 while ((ln = br.readLine()) != null) sb.append(ln);
                 html = sb.toString();
-            } catch (Exception e){
-                Log.e("LOG","HTML bufferedReader error:\n"+e);
+            } catch (Exception e) {
+                Log.e("LOG", "HTML bufferedReader error:\n" + e);
             } finally {
                 connection.disconnect();
             }
+        } catch (SocketTimeoutException | UnknownHostException timeoutException) {
+            return "timeout";
         } catch (Exception e) {
             Log.e("LOG","HTML connection error:\n"+e);
         }
         return html;
     }
     private String post(String url, String body){
+        if(!isHaveNetwork()){
+            return "no-network";
+        }
         try {
             HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
             connection.setRequestMethod("POST");
@@ -203,13 +240,12 @@ public class ScheduleUtils {
             connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
             connection.setRequestProperty("Accept", "application/json");
             connection.setRequestProperty("User-Agent", "Mozilla/5.0");
-            connection.setConnectTimeout(10000);
-            connection.setReadTimeout(10000);
+            connection.setConnectTimeout(2500);
+            connection.setReadTimeout(2500);
             try (OutputStream outputStream = connection.getOutputStream()) {
                 byte[] output = body.getBytes("UTF-8");
                 outputStream.write(output);
             }
-
             int responseCode = connection.getResponseCode();
             InputStream inputStream;
             if (responseCode >= 200 && responseCode < 300) {
@@ -217,7 +253,6 @@ public class ScheduleUtils {
             } else {
                 inputStream = connection.getErrorStream();
             }
-
             StringBuilder stringBuilder = new StringBuilder();
             try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
                 String line;
@@ -226,6 +261,8 @@ public class ScheduleUtils {
                 }
             }
             return stringBuilder.toString();
+        } catch (SocketTimeoutException | UnknownHostException timeoutException) {
+            return "timeout";
         } catch (Exception e) {
             Log.e("LOG","HTML connection error:\n"+e);
             return null;

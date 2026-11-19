@@ -1,13 +1,9 @@
 package com.example.scheduleapp;
 
 import android.annotation.SuppressLint;
-import android.app.AlertDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.util.Log;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
@@ -15,23 +11,39 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-
 import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.core.widget.NestedScrollView;
-
-import java.io.BufferedReader;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+
 import com.example.scheduleapp.Classes.Lesson;
 
 public class BasicUtils {
 
+    /// Пример выхода: `Понедельник`
     public String getSystemWeekday(){
         LocalDate today = LocalDate.now();
         DayOfWeek dayOfWeek = today.getDayOfWeek();
         int dayValue = dayOfWeek.getValue();
         String[] weekdays = new String[]{"Понедельник","Вторник","Среда","Четверг","Пятница","Суббота","Воскресенье"};
         return weekdays[dayValue-1];
+    }
+
+    /// Текущее время между переданными или нет
+    /// Пример входа: "09:30 — 10:10"; выход: true/false
+    public boolean isMiddleTime(String time){
+        if (time == null) return false;
+        String[] times = time.split(" — ");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
+        if (times.length == 2){
+            LocalTime first = LocalTime.parse(times[0], formatter);
+            LocalTime second = LocalTime.parse(times[1], formatter);
+            LocalTime now = LocalTime.now();
+            return now.isAfter(first) && now.isBefore(second);
+        }
+
+        return false;
     }
 
     @SuppressLint("ClickableViewAccessibility")

@@ -46,6 +46,7 @@ public class MainActivity extends AppCompatActivity {
             return insets;
         });
         // Устанавливаем всё что надо
+        scheduleUtils.mainActivity = this;
         include_header = findViewById(R.id.include_header);
         bottom_navigator = findViewById(R.id.bottom_navigator);
         sp = getSharedPreferences("hgfdzxgguhijoihugyfdt",MODE_PRIVATE);
@@ -74,7 +75,7 @@ public class MainActivity extends AppCompatActivity {
             return insets;
         });
 
-        // Работаем с переменными
+        // Работаем с установленным
         bottom_navigator.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
             if(id == R.id.menu_day){
@@ -92,13 +93,10 @@ public class MainActivity extends AppCompatActivity {
         headerGroupSetButton.setOnClickListener(view -> {
             goTo("select_group");
         });
-        if(sp.getString("current_group", "").isEmpty())
-        {
+        if(sp.getString("current_group", "").isEmpty()) {
             goTo("select_group");
-        }
-        else
-        {
-            new Thread(()->scheduleUtils.getSchedule(sp.getString("current_group",""))).start();
+        } else {
+            new Thread(()->scheduleUtils.getScheduleInClasses(sp)).start();
             goTo("fragment_day");
         }
     }
